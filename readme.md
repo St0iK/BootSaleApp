@@ -2,6 +2,8 @@
 Project-A | Bootsale application
 ============================
 
+This is a work in progress and not a finished fully working project
+
 Description
 -----------
 Project-A is a work in progress building a fully functionaly boot sale & classifieds website & application.
