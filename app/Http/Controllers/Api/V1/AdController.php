@@ -38,7 +38,10 @@ class AdController extends Controller
         $category_id = $request->input('category_id');
         
         if(!empty($category_id)){
-            $ads = Ad::with(['countComments','countBids','user','photos'])->olomalakies($from_latitude,$from_longitude)->where('category_id', 2 )->paginate(10);
+            $ads = Ad::with(['countComments','countBids','user','photos'])
+            ->olomalakies($from_latitude,$from_longitude)
+            ->where('category_id', $category_id )
+            ->paginate(10);
         }else{
             $ads = Ad::with(['countComments','countBids','user','photos'])->olomalakies($from_latitude,$from_longitude)->paginate(10);    
         }
