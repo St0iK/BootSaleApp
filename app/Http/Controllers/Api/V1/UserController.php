@@ -130,7 +130,7 @@ class UserController extends Controller
         }
 
         // Save image localy 
-        $image = Uuid::generate() . '.' . $imageData->getClientOriginalExtension();
+        $image = Uuid::generate() . '.' . $data['profile_pic']->getClientOriginalExtension();
         $path = '/tmp/' . Uuid::generate() . '.' . $data['profile_pic']->getClientOriginalExtension();
         Image::make($data['profile_pic']->getRealPath())->resize(200, 200)->save($path);
 
