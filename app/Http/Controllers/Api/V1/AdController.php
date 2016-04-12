@@ -86,7 +86,7 @@ class AdController extends Controller
      */
     protected function getAdCredentials(Request $request)
     {
-        return $request->only('title','description','category_id','price','latitude','longitude','currency_code');
+        return $request->only('user_id','title','description','category_id','price','latitude','longitude','currency_code');
     }
     protected function getPhotoCredentials(Request $request)
     {
