@@ -6,4 +6,3 @@ Homestead.yaml
 Homestead.json
 .env
 /.DS_Store
-config/aws.php
