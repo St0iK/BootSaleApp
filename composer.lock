@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "90c84cc940d240cf036bd5e37ca09262",
-    "content-hash": "51096eb80101954bea9224ff74d6e655",
+    "hash": "f60a9a9bec3a80c843c19b1af0412d25",
+    "content-hash": "0237c8dae95465d417bd398ff9fbc8a4",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -556,16 +556,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "1.2.3",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b"
+                "reference": "31382fef2889136415751badebbd1cb022a4ed72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/2e89629ff057ebb49492ba08e6995d3a6a80021b",
-                "reference": "2e89629ff057ebb49492ba08e6995d3a6a80021b",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/31382fef2889136415751badebbd1cb022a4ed72",
+                "reference": "31382fef2889136415751badebbd1cb022a4ed72",
                 "shasum": ""
             },
             "require": {
@@ -610,7 +610,7 @@
                 "stream",
                 "uri"
             ],
-            "time": "2016-02-18 21:54:00"
+            "time": "2016-04-13 19:56:01"
         },
         {
             "name": "intervention/image",
@@ -2794,6 +2794,45 @@
             "time": "2015-06-14 21:17:01"
         },
         {
+            "name": "f2m2/apidocs",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/f2m2/apidocs.git",
+                "reference": "a2d0af835eb86fe1db9f2fcee9a84af21363629e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/f2m2/apidocs/zipball/a2d0af835eb86fe1db9f2fcee9a84af21363629e",
+                "reference": "a2d0af835eb86fe1db9f2fcee9a84af21363629e",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "5.*",
+                "php": ">=5.4.0",
+                "phpdocumentor/reflection-docblock": "2.0.*@dev"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "F2m2\\Apidocs\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "F2M2, Inc.",
+                    "email": "hello@f2m2.com"
+                }
+            ],
+            "description": "Laravel API Documentation Generator",
+            "homepage": "https://github.com/f2m2/apidocs",
+            "time": "2016-03-14 17:50:53"
+        },
+        {
             "name": "hamcrest/hamcrest-php",
             "version": "v1.2.2",
             "source": {
@@ -3915,7 +3954,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "lucadegasperi/oauth2-server-laravel": 20
+        "lucadegasperi/oauth2-server-laravel": 20,
+        "f2m2/apidocs": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
