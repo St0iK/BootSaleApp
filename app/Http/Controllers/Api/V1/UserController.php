@@ -33,6 +33,7 @@ class UserController extends ApiController
         // Update array keys to email if necessary
         if(filter_var( $return['username'], FILTER_VALIDATE_EMAIL ))
         {
+            unset($return['username']);
             $return['email'] = $return['login'];
         }
         // Unset login from the array
