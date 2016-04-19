@@ -217,7 +217,7 @@ class UserController extends ApiController
             'password' => bcrypt($data['password']),
         ]);
         
-        return $this->respondCreated("User created successfully");
+        return $this->respondCreated($user);
 
     }
 

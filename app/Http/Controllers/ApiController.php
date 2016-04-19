@@ -25,14 +25,14 @@ class ApiController extends Controller{
 	 * @param  $status_codeinteger
 	 * @return JSON object
 	 */
-	public function respond($data, $response_message, $status_code = 200) 
+	public function respond($data, $response_message = NULL, $status_code = 200) 
 	{
 		 $response['status'] = true;
 		 if (isset($data)){
 		 	$response['data'] = $data;	
 		 }
 		 
-		 if (isset($message)){
+		 if (isset($response_message)){
 		 	$response['message'] = $response_message;	
 		 }
 		 
@@ -89,11 +89,8 @@ class ApiController extends Controller{
 	  }
 
 
-	public function respondCreated($message = 'Resource created', $data = null) {
-		if(isset($data)){
-			$message['data'] = $data;
-		}
-		return $this->respond($message, 201);
+	public function respondCreated($data = null , $message = 'Resource created') {
+		return $this->respond($data, $message, 201);
 	}
 
 	public function respondUnauthorized( $error_code, $message = 'You are not authorized for this') {

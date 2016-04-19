@@ -22,7 +22,7 @@ use App\User;
  */
 class ApiUsersTest extends TestCase
 {
-    use DatabaseMigrations;
+    // use DatabaseMigrations;
 
     /**
      * Test api for user registration
@@ -41,10 +41,9 @@ class ApiUsersTest extends TestCase
         ];
 
         $this->json('POST', '/api/v1/users/register', $post)
-                     ->seeJsonEquals([
+                     ->seeJson([
                          'status' => true,
-                         'data' => 'User created successfully',
-                         'status_code' => 200
+                         'status_code' => 201
                      ]);
     }
 
@@ -161,6 +160,7 @@ class ApiUsersTest extends TestCase
         ];
         $this->json('POST', '/api/v1/users/login', $post)
                      ->seeJsonEquals([
+                         'message' => 'User authenticated successfully',
                          'status' => true,
                          'status_code' => 200
                      ]);
@@ -182,6 +182,7 @@ class ApiUsersTest extends TestCase
         ];
         $this->json('POST', '/api/v1/users/login', $post)
                      ->seeJsonEquals([
+                         'message' => 'User authenticated successfully',
                          'status' => true,
                          'status_code' => 200
                      ]);

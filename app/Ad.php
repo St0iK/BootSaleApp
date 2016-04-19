@@ -114,7 +114,7 @@ class Ad extends Model
   	return ($related) ? (int)$related['attributes']['count'] : 0;
   }
 
-  public function ScopeOlomalakies($query,$from_latitude,$from_longitude)
+  public function ScopeWithinDistance($query,$from_latitude,$from_longitude)
   {
     $raw = \DB::raw('ROUND ( ( 6371 * acos( cos( radians('.$from_latitude.') ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians('.$from_longitude.') ) + sin( radians('.$from_latitude.') ) * sin( radians( latitude ) ) ) ) ) AS distance');
     return $query->select('*')->addSelect($raw)->orderBy( 'distance', 'ASC' );

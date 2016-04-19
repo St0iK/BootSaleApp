@@ -6,47 +6,88 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-
+use App\Http\Controllers\ApiController;
 use App\Ad;
 use App\AdPhoto;
 use AWS;
 use Uuid;
 use Image;
+use Validator;
 
-class AdController extends Controller
+class AdController extends ApiController
 {
+
     /**
-     * Display a listing of the resource.
+     * @api {get} /ads?from_latitude=123123&from_latitude=13123 Get Ads
+     * @apiName GetAds
+     * @apiGroup Ads
      *
-     * @return \Illuminate\Http\Response
+     * @apiParam {String} from_latitude User's location latitude
+     * @apiParam {String} from_longitude User's location longitude
+     *
+     * @apiSuccess {Boolean} status Flag true/false
+     * @apiSuccess {Number} status_code Status Code
+     * @apiSuccessExample {json} Success-Response:
+     *            {"status":true,"status_code":200}  
+     *
+     * @apiError ValidationFailed Missing required fields on post
+     * @apiErrorExample RequiredFieldsError {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     *   {
+     *     "status": false,
+     *     "errors": "Wrong request. Please include all required data",
+     *     "error_code": "js_11922",
+     *     "status_code": 400
+     *    }     
      */
     public function index(Request $request)
     {
-        $validator = $this->validate($request, [
-                        'from_latitude' => 'required',
-                        'from_longitude' => 'required',
-                    ]);
-
-        if ($validator) {
-            $this->throwValidationException(
-                $request, $validator
-            );
+        // Make sure request contains latitude and longitude
+        $validateRequest = $this->validateGetListingsRequest($request);
+        if ($validateRequest->fails()) {
+            $message = 'Wrong request. Please include all required data';
+            return $this->respondWithError($message, 'js_11922');
         }
-
         $from_latitude = $request->input('from_latitude');
         $from_longitude = $request->input('from_longitude');
         $category_id = $request->input('category_id');
         
+        return  $this->respond($this->getAds($category_id, $from_latitude, $from_longitude));
+    
+    }
+
+    /**
+     * [getAds description]
+     * @param  [type] $category_id [description]
+     * @return [type]              [description]
+     */
+    private function getAds($category_id = NULL, $from_latitude, $from_longitude)
+    {
         if(!empty($category_id)){
-            $ads = Ad::with(['countComments','countBids','user','photos'])
-            ->olomalakies($from_latitude,$from_longitude)
+            // return ads for this category
+            return  Ad::with(['countComments','countBids','user','photos'])
+            ->withindistance($from_latitude,$from_longitude)
             ->where('category_id', $category_id )
             ->paginate(10);
-        }else{
-            $ads = Ad::with(['countComments','countBids','user','photos'])->olomalakies($from_latitude,$from_longitude)->paginate(10);    
         }
-        
-        return $ads;
+
+        // Return all ads
+        return Ad::with(['countComments','countBids','user','photos'])
+        ->withindistance($from_latitude,$from_longitude)->paginate(10);            
+    }
+
+    /**
+     * [validateGetListingsRequest description]
+     * @return [type] [description]
+     */
+    private function validateGetListingsRequest(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'from_latitude' => 'required',
+            'from_longitude' => 'required',
+        ]);
+
+        return $validator;
     }
 
     /**
@@ -64,9 +105,9 @@ class AdController extends Controller
      * @param  [type] $request [description]
      * @return [type]          [description]
      */
-    public function validateData($request)
+    public function validatePostData($request)
     {
-        $this->validate($request, [
+        $validator = Validator::make($request->all(), [
             'user_id' => 'required',
             'title' => 'required',
             'description' => 'required',
@@ -76,6 +117,8 @@ class AdController extends Controller
             'longitude' => 'required',
             'currency_code' => 'required'
         ]);
+        
+        return $validator;
     }
 
     /**
@@ -101,53 +144,84 @@ class AdController extends Controller
      */
     public function store(Request $request)
     {
-        $this->validateData($request);
-        $s3 = AWS::createClient('s3'); 
+        // Validate request
+        $validatePostData = $this->validatePostData($request);
+        if ($validatePostData->fails()) {
+            $message = "Please check your form";
+            $errors = $validatePostData->errors();
+            return $this->respondWithValidationErrors('message', $errors);
+        }
+         
         $data = $this->getAdCredentials($request);
         $images = $this->getPhotoCredentials($request);
 
         $ad = Ad::create($data);
-
-        foreach ($images as $imageData) 
-        {
-            if($imageData)
-            {
-                // Save image localy 
-                $image = Uuid::generate() . '.' . $imageData->getClientOriginalExtension();
-                $path = '/tmp/' . Uuid::generate() . '.' . $imageData->getClientOriginalExtension();
-                Image::make($imageData->getRealPath())->resize(200, 200)->save($path);
-
-                // Upload normal image && thumb
-                $s3_upload = $s3->putObject(array(
-                    'Bucket'     => '7480683303',
-                    'Key'        => "ads/".$image,
-                    'SourceFile' => $imageData->getRealPath(),
-                ));
-
-                $s3_thumb_upload = $s3->putObject(array(
-                    'Bucket'     => '7480683303',
-                    'Key'        => "ads/thumbs/".$image,
-                    'SourceFile' => $path,
-                ));
-
-                $data = [
-                    'path' => "ads/".$image,
-                    'thumb_path' => "ads/thumbs/".$image,
-                ];
-
-                if($s3_upload && $s3_thumb_upload){
-                    // $adPhoto = AdPhoto::create($data);  
-                    $photo = new AdPhoto($data);
-                    $photo->ad()->associate($ad); 
-                    $photo->save();
-                }
-                
-            }
-        }
-
-        return $ad;
+        $this->storeImages($ad, $images);
+        
+        return $this->respondCreated($ad);
     }
 
+    /**
+     * [storeImages description]
+     * @param  [type] $ad     [description]
+     * @param  [type] $images [description]
+     * @return [type]         [description]
+     */
+    private function storeImages($ad, $images)
+    {
+        foreach ($images as $imageData) 
+        {
+            $this->saveImage($ad, $imageData);
+        }
+    }
+
+    /**
+     * [saveImage description]
+     * @param  [type] $ad        [description]
+     * @param  [type] $imageData [description]
+     * @return [type]            [description]
+     */
+    private function saveImage($ad, $imageData)
+    {
+        if(!$imageData) return;
+
+        // Save image localy 
+        $image = Uuid::generate() . '.' . $imageData->getClientOriginalExtension();
+        $path = '/tmp/' . Uuid::generate() . '.' . $imageData->getClientOriginalExtension();
+        Image::make($imageData->getRealPath())->resize(200, 200)->save($path);
+
+        // Upload files to aws
+        $s3_upload = $this->awsFileUpload("ads/".$image, $imageData->getRealPath());
+        $s3_thumb_upload = $this->awsFileUpload("ads/thumbs/".$image, $path);
+
+        $data = [
+            'path' => "ads/".$image,
+            'thumb_path' => "ads/thumbs/".$image,
+        ];
+
+        // Save photo to database and assosiate with ad
+        if($s3_upload && $s3_thumb_upload){
+            $photo = new AdPhoto($data);
+            $photo->ad()->associate($ad); 
+            $photo->save();
+        }
+    }
+
+    /**
+     * [awsFileUpload description]
+     * @param  [type] $key        [description]
+     * @param  [type] $sourceFile [description]
+     * @return [type]             [description]
+     */
+    private function awsFileUpload($key, $sourceFile)
+    {
+        $s3 = AWS::createClient('s3');
+        return $s3->putObject(array(
+            'Bucket'     => \Config::get('aws.bucket'),
+            'Key'        => $key,
+            'SourceFile' => $sourceFile,
+        ));
+    }
     /**
      * Display the specified resource.
      *
