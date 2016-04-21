@@ -102,7 +102,20 @@ class UserController extends ApiController
      * @apiSuccess {Boolean} status Flag true/false
      * @apiSuccess {Number} status_code Status Code
      * @apiSuccessExample {json} Success-Response:
-     *            {"status":true,"status_code":200}  
+     *   {
+     *        "status": true,
+     *        "data": {
+     *          "first_name": "first_name",
+     *          "last_name": "last_name",
+     *          "email": "email@email.com",
+     *          "username": "username",
+     *          "updated_at": "2016-04-19 22:07:38",
+     *          "created_at": "2016-04-19 22:07:38",
+     *                   "id": 6
+             },
+     *        "message": "Resource created",
+     *        "status_code": 201
+     *   }
      *
      * @apiError AuthenticationFailedError When the provided credentials are wrong
      * @apiError ValidationFailed Missing required fields on post
