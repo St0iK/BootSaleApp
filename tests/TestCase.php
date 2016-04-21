@@ -9,6 +9,15 @@ class TestCase extends Illuminate\Foundation\Testing\TestCase
      */
     protected $baseUrl = 'http://localhost';
 
+    public function prepareForTests(){
+        Config::set('database.default', 'mysqltesting');
+        Artisan::call('migrate');
+    }
+    public function setUp(){
+        parent::setUp();
+
+        $this->prepareForTests();
+    }
     /**
      * Creates the application.
      *
