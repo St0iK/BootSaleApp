@@ -18,17 +18,64 @@ class AdController extends ApiController
 {
 
     /**
-     * @api {get} /ads?from_latitude=123123&from_latitude=13123 Get Ads
-     * @apiName GetAds
-     * @apiGroup Ads
+     * @api {get} /ads?from_latitude=123123&from_latitude=13123 Get listings
+     * @apiName GetListings
+     * @apiGroup Listings
      *
      * @apiParam {String} from_latitude User's location latitude
      * @apiParam {String} from_longitude User's location longitude
      *
      * @apiSuccess {Boolean} status Flag true/false
      * @apiSuccess {Number} status_code Status Code
+     * @apiSuccess {Number} data Contains the ads
      * @apiSuccessExample {json} Success-Response:
-     *            {"status":true,"status_code":200}  
+     {
+       "status": true,
+       "data": {
+         "total": 1,
+         "per_page": 10,
+         "current_page": 1,
+         "last_page": 1,
+         "next_page_url": null,
+         "prev_page_url": null,
+         "from": 1,
+         "to": 1,
+         "data": [
+           {
+             "id": 1,
+             "user_id": 1,
+             "title": "title",
+             "description": "description",
+             "category_id": 1,
+             "status": 0,
+             "price": "20.00",
+             "latitude": "1.00",
+             "longitude": "1.00",
+             "currency_code": "EUR",
+             "created_at": "2016-04-19 22:13:48",
+             "updated_at": "2016-04-19 22:13:48",
+             "distance": 8045,
+             "total_comments": 0,
+             "total_bids": 0,
+             "user": {
+               "id": 1,
+               "username": "atque",
+               "first_name": "Alicia Rippin",
+               "last_name": "Ortiz",
+               "display_name": "",
+               "email": "nicolas.dolores@haag.biz",
+               "telephone": "",
+               "profile_pic": "",
+               "status": 0,
+               "created_at": "2016-04-19 20:32:16",
+               "updated_at": "2016-04-19 20:32:16"
+             },
+             "photos": []
+           }
+         ]
+       },
+       "status_code": 200
+     }
      *
      * @apiError ValidationFailed Missing required fields on post
      * @apiErrorExample RequiredFieldsError {json} Error-Response:
@@ -40,6 +87,7 @@ class AdController extends ApiController
      *     "status_code": 400
      *    }     
      */
+    
     public function index(Request $request)
     {
         // Make sure request contains latitude and longitude
@@ -137,19 +185,76 @@ class AdController extends ApiController
     }
 
     /**
-     * Store a newly created resource in storage.
+     * @api {post} /ads Create a new listing
+     * @apiName AddListing
+     * @apiGroup Listings
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @apiParam {String} user_id The id of the user that creates the listing
+     * @apiParam {String} title The title of the listing ex. Macbook Pro 2013
+     * @apiParam {String} description The title of the listing ex. Macbook Pro 2013
+     * @apiParam {String} category_id The id of the category the listing belongs
+     * @apiParam {String} price Suggested price
+     * @apiParam {String} latitude Location informatio
+     * @apiParam {String} longitude Location informatio
+     * @apiParam {String} currency_code Currency code of the price
+     *
+     * @apiSuccess {Boolean} status Flag true
+     * @apiSuccess {Number} status_code 200
+     * @apiSuccess {Number} data Listing information
+     * @apiSuccessExample {json} Success-Response:
+     * {
+          "status": true,
+          "data": {
+            "user_id": "1",
+            "title": "title",
+            "description": "description",
+            "category_id": "1",
+            "price": "20",
+            "latitude": "1",
+            "longitude": "1",
+            "currency_code": "EUR",
+            "updated_at": "2016-04-19 22:53:15",
+            "created_at": "2016-04-19 22:53:15",
+            "id": 2,
+            "total_comments": 0,
+            "total_bids": 0
+          },
+          "message": "Resource created",
+          "status_code": 201
+       }
+     *
+     * @apiError ValidationFailed Missing required fields on post
+     * @apiErrorExample RequiredFieldsError {json} Error-Response:
+     *     HTTP/1.1 400 Bad Request
+     {
+       "status": false,
+       "message": "Please check your post, required fields are missing.",
+       "errors": [
+         {
+           "user_id": [
+             "The user id field is required."
+           ],
+           "title": [
+             "The title field is required."
+           ],
+           "description": [
+             "The description field is required."
+           ],
+           "category_id": [
+             "The category id field is required."
+           ]
+         }
+       ]
+     }     
      */
     public function store(Request $request)
     {
         // Validate request
         $validatePostData = $this->validatePostData($request);
         if ($validatePostData->fails()) {
-            $message = "Please check your form";
+            $message = "Please check your post, required fields are missing.";
             $errors = $validatePostData->errors();
-            return $this->respondWithValidationErrors('message', $errors);
+            return $this->respondWithValidationErrors($message, $errors);
         }
          
         $data = $this->getAdCredentials($request);
@@ -157,8 +262,7 @@ class AdController extends ApiController
 
         $ad = Ad::create($data);
         $this->storeImages($ad, $images);
-        
-        return $this->respondCreated($ad);
+        return $this->respondCreated(Ad::with(['photos'])->find($ad['id']));
     }
 
     /**
