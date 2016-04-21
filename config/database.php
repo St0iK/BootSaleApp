@@ -51,6 +51,7 @@ return [
     */
 
     'default' => env('DB_CONNECTION', 'mysql'),
+    'testing' => env('DB_CONNECTION', 'mysql'),
 
     /*
     |--------------------------------------------------------------------------
@@ -88,6 +89,19 @@ return [
             'strict'    => false,
             'unix_socket'   => getenv('UNIX_SOCKET'),
         ],
+        'mysqltesting' => [
+            'driver'    => 'mysql',
+            'host'      => env('DB_HOST', $host),
+            'database'  => 'projecta_testing',
+            'username'  => env('DB_USERNAME', $username),
+            'password'  => env('DB_PASSWORD', $password),
+            'charset'   => 'utf8',
+            'collation' => 'utf8_unicode_ci',
+            'prefix'    => '',
+            'strict'    => false,
+            'unix_socket'   => getenv('UNIX_SOCKET'),
+        ],
+        
 
         'pgsql' => [
             'driver'   => 'pgsql',
